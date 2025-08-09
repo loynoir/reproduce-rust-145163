@@ -9,10 +9,10 @@ use {
 #[unsafe(no_mangle)]
 extern "C" fn reproduce(env: napi_env, info: napi_callback_info) -> napi_value {
     let mut argc = [2];
-    let args = MaybeUninit::<[napi_value; 2]>::uninit();
+    let mut args = MaybeUninit::<[napi_value; 2]>::uninit();
 
-    let mut args = unsafe { args.assume_init() };
-    let status = unsafe { napi_get_cb_info(env, info, argc.as_mut_ptr(), args.as_mut_ptr(), null_mut(), null_mut()) };
+    let status = unsafe { napi_get_cb_info(env, info, argc.as_mut_ptr(), args.as_mut_ptr().cast::<napi_value>(), null_mut(), null_mut()) };
+    let _args = unsafe { args.assume_init() };
 
     if status == napi_ok {
         eprintln!("[reproduce] status == napi_ok, should not error");
@@ -27,10 +27,11 @@ extern "C" fn reproduce(env: napi_env, info: napi_callback_info) -> napi_value {
         return null_mut();
     }
 
-    let result = MaybeUninit::<napi_value>::uninit();
+    let mut result = MaybeUninit::<napi_value>::uninit();
 
-    let mut result: napi_value = unsafe { result.assume_init() };
-    let status = unsafe { napi_create_uint32(env, 42, &mut result) };
+    let status = unsafe { napi_create_uint32(env, 42, result.as_mut_ptr()) };
+    let result: napi_value = unsafe { result.assume_init() };
+
     if status != napi_ok {
         panic!();
     }
@@ -41,10 +42,10 @@ extern "C" fn reproduce(env: napi_env, info: napi_callback_info) -> napi_value {
 #[unsafe(no_mangle)]
 extern "C" fn workaround(env: napi_env, info: napi_callback_info) -> napi_value {
     let mut argc = [2];
-    let args = MaybeUninit::<[napi_value; 2]>::uninit();
+    let mut args = MaybeUninit::<[napi_value; 2]>::uninit();
 
-    let mut args = unsafe { args.assume_init() };
-    let status = unsafe { napi_get_cb_info(env, info, argc.as_mut_ptr(), args.as_mut_ptr(), null_mut(), null_mut()) };
+    let status = unsafe { napi_get_cb_info(env, info, argc.as_mut_ptr(), args.as_mut_ptr().cast::<napi_value>(), null_mut(), null_mut()) };
+    let _args = unsafe { args.assume_init() };
 
     if status == napi_ok {
         eprintln!("[workaround] status == napi_ok, should not error");
@@ -59,10 +60,10 @@ extern "C" fn workaround(env: napi_env, info: napi_callback_info) -> napi_value 
         return null_mut();
     }
 
-    let result = MaybeUninit::<[napi_value; 1]>::uninit();
+    let mut result = MaybeUninit::<[napi_value; 1]>::uninit();
 
-    let mut result: [napi_value; 1] = unsafe { result.assume_init() };
-    let status = unsafe { napi_create_uint32(env, 42, result.as_mut_ptr()) };
+    let status = unsafe { napi_create_uint32(env, 42, result.as_mut_ptr().cast()) };
+    let result: [napi_value; 1] = unsafe { result.assume_init() };
 
     if status != napi_ok {
         panic!();

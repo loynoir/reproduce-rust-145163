@@ -9,6 +9,19 @@ $ bash ./build.sh
 ...
 ```
 
+## fixed
+
+```console
+=== Calling debug reproduce ===
+[reproduce] status == napi_ok, should not error
+
+=== Calling release reproduce ===
+[reproduce] status == napi_ok, should not error
+
+=== Calling release workaround ===
+[workaround] status == napi_ok, should not error
+```
+
 ## actual
 
 When debug mode
